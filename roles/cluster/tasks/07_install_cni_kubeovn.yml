@@ -22,15 +22,12 @@
     - "/etc/origin/openvswitch"  # 配置文件目录（脚本中挂载了此路径）
   when: is_worker == 1
 
-
-
 - name: 创建临时目录存放 kube-ovn 安装脚本
   ansible.builtin.file:
     path: "/tmp/kube-ovn"
     state: directory
     mode: '0755'
   when: is_worker == 1
-
 
 - name: 复制本地 kube-ovn 安装脚本（v1.13.15）到目标节点
   ansible.builtin.copy:
@@ -68,14 +65,14 @@
   ignore_errors: yes  # 新增：忽略该步骤的错误，不中断部署
   when: (is_init is defined) and (is_init == 1)
 
-- name: 打印 kube-ovn 安装脚本执行结果
-  ansible.builtin.debug:
-    msg: |
-      安装脚本返回码: {{ ovn_install_result.rc }}
-      标准输出: {{ ovn_install_result.stdout | default('无') }}
-      错误输出: {{ ovn_install_result.stderr | default('无') }}
-  when: (is_init is defined) and (is_init == 1)
-
+- name: Fix /var/run/openvswitch directory permissions
+  ansible.builtin.file:
+    path: "/var/run/openvswitch"
+    state: directory
+    owner: '65534'  # nobody UID
+    group: '65534'  # nobody GID
+    mode: '0755'
+  when: is_worker == 1
 
 # 可选：添加“验证 Kube-OVN 核心组件状态”的任务，确保实际可用
 - name: 验证 Kube-OVN 核心组件状态
