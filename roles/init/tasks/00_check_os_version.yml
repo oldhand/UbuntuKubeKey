@@ -1,0 +1,10 @@
+---
+# Only for Ubuntu 22.04
+- name: Make sure /etc/os-release existing
+  command: cat /etc/os-release
+  register: os_release
+
+- name: Exit if is not Ubuntu 22.04
+  fail:
+    msg: "Unsupported distribution."
+  when: os_release.stdout is not search("Ubuntu 22.04")

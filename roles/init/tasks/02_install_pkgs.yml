@@ -1,0 +1,13 @@
+---
+- name: Install pkgs
+  apt:
+    name: 
+      # Tools
+      - tar
+      - telnet
+      - bash-completion
+      # 
+      # For runc
+      - seccomp
+      # Fixed: Aborting, target uses selinux but python bindings (libselinux-python) aren't installed!
+    state: present

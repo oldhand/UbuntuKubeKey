@@ -1,0 +1,35 @@
+---
+- name: 收集 SELinux 相关事实
+  setup:
+    filter: 'ansible_selinux'
+  tags: selinux
+
+- name: 当 SELinux 未定义时设置默认状态（适用于未安装 SELinux 的 Ubuntu）
+  set_fact:
+    ansible_selinux: {"status": "disabled", "mode": "disabled"}
+  when: ansible_selinux is undefined
+
+- name: 临时将 SELinux 切换为 permissive 模式（仅当启用时）
+  command: setenforce 0
+  register: setenforce_result
+  changed_when: setenforce_result.rc == 0
+  failed_when:
+    - setenforce_result.rc != 0
+    - "'SELinux is disabled' not in setenforce_result.stderr"  # 忽略已禁用的错误
+  when:
+    - ansible_distribution == 'Ubuntu'  # 严格限制为 Ubuntu
+    - ansible_selinux.status == 'enabled'
+    - ansible_selinux.mode != 'permissive'
+
+- name: 永久禁用 SELinux（修改配置文件）
+  lineinfile:
+    path: /etc/selinux/config
+    regexp: '^SELINUX='
+    line: 'SELINUX=disabled'
+    state: present
+    create: false  # Ubuntu 通常没有此文件，不自动创建
+  when:
+    - ansible_distribution == 'Ubuntu'
+    - ansible_selinux.status == 'enabled'
+  ignore_errors: true  # 忽略文件不存在的错误（Ubuntu 默认无此文件）
+

@@ -1,0 +1,38 @@
+---
+- name: Get helm package
+  get_url: 
+#    url: http://192.168.161.1/helm-v{{ helm_version }}-linux-amd64.tar.gz
+    url: "file://{{ playbook_dir }}/helm-v{{ helm_version }}-linux-amd64.tar.gz"
+    dest: /tmp/helm-v{{ helm_version }}-linux-amd64.tar.gz
+  when: is_master == 1
+
+- name: Untar helm package
+  unarchive:
+    src: /tmp/helm-v{{ helm_version }}-linux-amd64.tar.gz
+    dest: /tmp
+    remote_src: yes
+  when: is_master == 1
+
+- name: Move helm to bin directory
+  copy: 
+    src: /tmp/linux-amd64/helm
+    dest: /usr/local/bin/helm
+    remote_src: yes
+  when: is_master == 1
+
+- name: Add execute perms to helm
+  shell: |
+    chmod +x /usr/local/bin/helm
+  when: is_master == 1
+
+- name: Clean up helm untar directory
+  file:
+    path: /tmp/linux-amd64
+    state: absent
+  when: is_master == 1
+
+- name: Clean up helm package
+  file:
+    path: /tmp/helm-v{{ helm_version }}-linux-amd64.tar.gz
+    state: absent
+  when: is_master == 1

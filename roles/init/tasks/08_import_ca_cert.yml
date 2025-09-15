@@ -1,0 +1,9 @@
+---
+# Import ca certificates (qwer.com)
+- name: Copy ca certificates to host
+  copy:
+    src: cacert.pem
+    dest: /etc/pki/ca-trust/source/anchors/cacert.pem
+
+- name: Update ca cert cache
+  shell: update-ca-trust

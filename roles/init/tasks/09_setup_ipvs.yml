@@ -1,0 +1,12 @@
+---
+- name: Install ipset and ipvsadm
+  dnf:
+    name: 
+      - ipset
+      - ipvsadm
+    state: present
+
+- name: Load modules for ipvs
+  copy:
+    src: modules-ipvs.conf
+    dest: /etc/modules-load.d/ipvs.conf

@@ -1,0 +1,27 @@
+---
+# Disable firewall
+- name: Gather service facts
+  service_facts:  # 收集系统服务信息
+
+
+- name: Disable ufw and iptables service
+  systemd:
+    name: "{{ item }}"
+    state: stopped
+    enabled: no
+  with_items:
+    - ufw.service
+    - iptables.service
+  when: "item in services"  # 仅当服务存在时执行
+  ignore_errors: true
+
+- name: Check if iptables exists
+  command: which iptables
+  register: iptables_exists
+  failed_when: no
+  changed_when: no
+
+- name: Flush iptables rules
+  command: iptables -F
+  when: iptables_exists.rc == 0  # 仅当iptables存在时执行
+  ignore_errors: true
