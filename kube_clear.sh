@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# 检查是否以root权限运行
+if [ "$(id -u)" -ne 0 ]; then
+    echo "错误：此脚本需要以root权限运行，请使用sudo执行"
+    exit 1
+fi
 
 sudo kubeadm reset --force
 # 移除 kubelet 工作目录
@@ -11,7 +16,8 @@ sudo rm -rf /var/lib/etcd
 # 移除 Kubernetes 配置残留
 sudo rm -rf /etc/kubernetes
 
-rm -rf /root/.kube/config
+sudo rm -rf /root/.kube/config
+rm -rf $HOME/.kube/config
 
 # 停止并删除所有 Kubernetes 相关容器
 sudo docker rm -f $(sudo docker ps -q --filter name=k8s_) 2>/dev/null

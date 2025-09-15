@@ -25,10 +25,10 @@ echo "下载所有的依赖包..."
 cd ./packages
 sudo apt-get download -o Dir::Cache="./" -o Dir::Cache::archives="./" \
     net-tools openssh-client openssh-server openssh-sftp-server sshpass curl wget git git-man tar apt-rdepends dpkg-dev libdpkg-perl libfile-fcntllock-perl lto-disabled-list make \
-    telnet bash-completion seccomp chrony
+    telnet bash-completion seccomp chrony ipset libipset13 ipvsadm apt-transport-https ca-certificates
 
 sudo apt-get download -o Dir::Cache="./" -o Dir::Cache::archives="./" \
-    ansible python3 python3-apt python3-jinja2 python3-yaml python3-paramiko python3-pkg-resources python3-cryptography libcurl4 liberror-perl \
+    ansible python3 python3-pip python3-setuptools python3-wheel python3-apt python3-jinja2 python3-yaml python3-paramiko python3-pkg-resources python3-cryptography libcurl4 liberror-perl \
     ieee-data libapt-pkg-perl python-babel-localedata python3-babel python3-bcrypt python3-distutils python3-dnspython python3-lib2to3 python3-markupsafe python3-netaddr python3-packaging python3-pycryptodome python3-requests-toolbelt \
     python3-sniffio python3-trio ipython3 \
     openvswitch-common openvswitch-switch

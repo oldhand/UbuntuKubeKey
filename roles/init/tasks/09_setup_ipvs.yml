@@ -1,6 +1,6 @@
 ---
 - name: Install ipset and ipvsadm
-  dnf:
+  apt:
     name: 
       - ipset
       - ipvsadm

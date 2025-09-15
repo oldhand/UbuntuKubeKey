@@ -4,7 +4,6 @@
 - include_tasks: 01_setup_yum.yml
 - include_tasks: 02_install_pkgs.yml
 - include_tasks: 03_setup_ntp.yml
-- include_tasks: 04_disable_selinux.yml
 - include_tasks: 05_disable_firewall.yml
 - include_tasks: 06_disable_swap.yml
 - include_tasks: 07_hosts_dns.yml

@@ -1,9 +1,17 @@
 ---
 # Import ca certificates (qwer.com)
-- name: Copy ca certificates to host
+- name: 创建Ubuntu CA证书目录（如果不存在）
+  file:
+    path: /usr/local/share/ca-certificates/
+    state: directory
+    mode: '0755'
+
+- name: 复制CA证书到Ubuntu系统
   copy:
     src: cacert.pem
-    dest: /etc/pki/ca-trust/source/anchors/cacert.pem
+    dest: /usr/local/share/ca-certificates/cacert.pem
+    mode: '0644'
 
-- name: Update ca cert cache
-  shell: update-ca-trust
+- name: 更新Ubuntu CA证书缓存
+  shell: update-ca-certificates
+

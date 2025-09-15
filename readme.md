@@ -1,7 +1,7 @@
-# openEuler系统上的Kubernetes自动化部署工具
+# Ubuntu系统上的Kubernetes自动化部署工具
 
 ## 仓库简介
-该仓库是一个基于Ansible的自动化部署工具，专为在openEuler 22.03 LTS系统上部署Kubernetes（k8s）1.29版本集群设计。通过预设的角色和任务流程，可实现集群环境的快速搭建，提高部署效率和一致性。
+该仓库是一个基于Ansible的自动化部署工具，专为在Ubuntu 22.04系统上部署Kubernetes（k8s）1.29版本集群设计。通过预设的角色和任务流程，可实现集群环境的快速搭建，提高部署效率和一致性。
 
 
 ## 核心结构
@@ -14,12 +14,9 @@
 - `cluster`：负责Kubernetes集群核心操作，包括安装kubeadm、kubelet、kubectl，初始化集群，添加主节点和工作节点，安装Helm工具及Calico网络插件等。
 - `docker`：部署容器运行时环境，包括安装Docker、配置cri-dockerd（Kubernetes与Docker的适配组件），以及设置cgroup驱动、镜像仓库加速等。
 - `init`：系统环境初始化，涵盖检查操作系统版本、配置yum源、安装基础依赖、设置NTP时间同步、禁用SELinux、关闭防火墙、禁用Swap等前置操作。
-- `lb`：配置负载均衡，通过安装haproxy和keepalived，实现Kubernetes API Server的流量转发和VIP（虚拟IP）高可用。
-- `test`：包含测试任务，用于部署过程中的验证。
 
 ### 其他文件
 - 各类安装包：如`docker-25.0.0.tgz`、`helm-v3.15.0-linux-amd64.tar.gz`、`cri-dockerd-0.3.4.amd64.tgz`等。
-- 仓库配置文件：`openEuler.repo`等yum源配置。
 - 部署脚本：`install.sh`（简化部署命令的封装脚本）。
 - 说明文档：`readme.md`（仓库介绍）、`install.md`（部署步骤）。
 
@@ -32,7 +29,7 @@
 ## 部署步骤
 
 ### 前提条件
-1. 目标主机需为**openEuler 22.03 LTS**系统（通过`init`角色自动验证）。
+1. 目标主机需为**Ubuntu 22.04 LTS**系统（通过`init`角色自动验证）。
 2. 准备Ansible控制节点，确保能通过SSH无密码访问所有目标节点（`hosts.ini`中定义的节点）。
 3. 确保`hosts.ini`中配置的IP地址、角色参数（如`is_master`、`is_init`、`lb_master`等）与实际环境一致。
 
@@ -99,7 +96,6 @@ chmod +x install.sh
 1**系统环境初始化（`[k8s]`节点）**：
   - 检查操作系统版本、配置yum源、安装基础依赖（`init`角色任务）。
   - 禁用SELinux、防火墙、Swap，配置NTP时间同步、主机DNS和IPVS规则。
-  - 修复openEuler系统特定问题（如sysctl配置、tmp.mount屏蔽）。
 
 2. **容器运行时部署（`[k8s]`节点）**：
   - 安装Docker（从本地tgz包）及cri-dockerd（`docker`角色任务）。
@@ -125,7 +121,6 @@ kubectl get pods -A
     - 主要操作：
         - 禁用Swap分区并注释`/etc/fstab`中的Swap配置
         - 关闭并禁用firewalld防火墙
-        - 临时关闭SELinux并配置永久关闭（需重启生效）
         - 调用Ansible剧本执行集群部署（`ansible-playbook -i hosts.ini install_k8s.yml`）
     - 使用方式：`chmod +x install.sh && ./install.sh`
 
@@ -159,22 +154,19 @@ kubectl get pods -A
 1. **全自动化部署**  
    从环境初始化到集群启动的全流程通过Ansible剧本自动执行，用户仅需配置`hosts.ini`并运行部署命令，大幅减少手动操作和人为错误。
 
-2. **深度适配openEuler**  
-   针对openEuler系统的特性优化（如系统bug修复、包管理适配），相比通用部署工具（如kubeadm）更稳定可靠。
+2. **深度适配Ubuntu**  
+   针对Ubuntu系统的特性优化（如系统bug修复、包管理适配），相比通用部署工具（如kubeadm）更稳定可靠。
 
-3. **高可用架构集成**  
-   内置haproxy+keepalived实现控制平面高可用，无需额外手动配置，降低集群部署门槛。
-
-4. **版本可控与兼容性保障**  
+3. **版本可控与兼容性保障**  
    明确指定Kubernetes 1.29、Docker 25.0.0等组件版本，通过变量文件（如`roles/cluster/vars/main.yml`）统一管理，避免版本混乱导致的兼容性问题。
 
-5. **离线部署支持**  
+4 **离线部署支持**  
    内置所有依赖安装包和仓库配置，可在无外部网络的环境中部署，适合内网或隔离环境使用。
 
-6. **可扩展性与可配置性**  
+5. **可扩展性与可配置性**  
    通过角色变量（如Pod/Service CIDR、VIP地址）支持集群参数自定义，满足不同网络环境和业务需求。
 
-7. **完整的校验与修复机制**  
+6. **完整的校验与修复机制**  
    部署过程中包含系统版本校验、组件安装校验、配置文件检查等步骤，出现问题时可通过日志（如`/tmp/kubeadm-init.log`）快速定位。
 
 

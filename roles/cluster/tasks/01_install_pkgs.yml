@@ -1,6 +1,6 @@
 ---
 - name: Install kubeadm kubelet
-  dnf: 
+  apt:
     name: 
       - kubeadm
       - kubelet
@@ -42,15 +42,22 @@
   when: is_worker == 1  # 所有节点都需要加载
 
 - name: Install kubectl
-  dnf: 
+  apt:
     name: kubectl
     state: present
   when: is_master == 1
 
-- name: Kubelet configuration
-  copy: 
+- name: 确保Ubuntu的kubelet配置目录存在
+  file:
+    path: /etc/default
+    state: directory
+    mode: '0755'
+  when: is_worker == 1
+
+- name: Kubelet configuration (Ubuntu)
+  copy:
     src: kubelet
-    dest: /etc/sysconfig/kubelet
+    dest: /etc/default/kubelet  # Ubuntu默认使用/etc/default/目录
   when: is_worker == 1
 
 - name: Enable kubelet

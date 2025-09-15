@@ -1,1 +1,1 @@
-KUBELET_EXTRA_ARGS=
+KUBELET_EXTRA_ARGS="--container-runtime-endpoint=unix:///var/run/cri-dockerd.sock"

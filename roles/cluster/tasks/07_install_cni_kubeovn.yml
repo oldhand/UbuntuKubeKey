@@ -1,10 +1,20 @@
 ---
 - name: Enable and start openvswitch service
   systemd:
-    name: openvswitch
+    name: openvswitch-switch
     enabled: yes
     state: started
     daemon_reload: yes
+
+- name: Fix /var/run/openvswitch permissions for nobody user
+  ansible.builtin.file:
+    path: "/var/run/openvswitch"
+    state: directory
+    owner: 65534  # nobody 的 UID
+    group: 65534  # nobody 的 GID
+    mode: '0755'
+    recurse: yes
+  when: is_worker == 1  # 仅在工作节点执行（控制节点也可同步添加）
 
 - name: 创建临时目录存放 kube-ovn 安装脚本
   ansible.builtin.file:
@@ -33,7 +43,7 @@
 
 - name: 离线安装 kube-ovn v1.13.8（仅在初始化节点执行）
   ansible.builtin.command: >
-    /tmp/kube-ovn/install.sh
+    sudo /tmp/kube-ovn/install.sh
   register: ovn_install_result
   no_log: true  # 关键：完全屏蔽该任务的所有输出（包括错误信息）
   failed_when: false  # 关键：强制将任务标记为“成功”，不显示 fatal 提示
