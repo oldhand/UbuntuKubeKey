@@ -6,15 +6,23 @@
     state: started
     daemon_reload: yes
 
-- name: Fix /var/run/openvswitch permissions for nobody user
+- name: Fix OVN/OVS related directory permissions
   ansible.builtin.file:
-    path: "/var/run/openvswitch"
+    path: "{{ item }}"
     state: directory
-    owner: 65534  # nobody 的 UID
-    group: 65534  # nobody 的 GID
+    owner: '65534'  # nobody UID
+    group: '65534'  # nobody GID
     mode: '0755'
     recurse: yes
-  when: is_worker == 1  # 仅在工作节点执行（控制节点也可同步添加）
+  loop:
+    - "/var/log/openvswitch"
+    - "/var/run/openvswitch"
+    - "/var/run/ovn"
+    - "/var/log/ovn"
+    - "/etc/origin/openvswitch"  # 配置文件目录（脚本中挂载了此路径）
+  when: is_worker == 1
+
+
 
 - name: 创建临时目录存放 kube-ovn 安装脚本
   ansible.builtin.file:
@@ -22,6 +30,7 @@
     state: directory
     mode: '0755'
   when: is_worker == 1
+
 
 - name: 复制本地 kube-ovn 安装脚本（v1.13.15）到目标节点
   ansible.builtin.copy:
@@ -41,14 +50,32 @@
   shell: "docker load -i /tmp/kube-ovn-v1.13.15.tar"
   when: is_worker == 1
 
-- name: 离线安装 kube-ovn v1.13.8（仅在初始化节点执行）
+- name: Fix CNI config directory permissions
+  ansible.builtin.file:
+    path: "/etc/cni/net.d"
+    state: directory
+    owner: '65534'  # nobody UID
+    group: '65534'  # nobody GID
+    mode: '0755'
+  when: is_worker == 1
+
+- name: 离线安装 kube-ovn v1.13.15（仅在初始化节点执行）
   ansible.builtin.command: >
-    sudo /tmp/kube-ovn/install.sh
+    /tmp/kube-ovn/install.sh
   register: ovn_install_result
-  no_log: true  # 关键：完全屏蔽该任务的所有输出（包括错误信息）
+#  no_log: true  # 关键：完全屏蔽该任务的所有输出（包括错误信息）
   failed_when: false  # 关键：强制将任务标记为“成功”，不显示 fatal 提示
   ignore_errors: yes  # 新增：忽略该步骤的错误，不中断部署
   when: (is_init is defined) and (is_init == 1)
+
+- name: 打印 kube-ovn 安装脚本执行结果
+  ansible.builtin.debug:
+    msg: |
+      安装脚本返回码: {{ ovn_install_result.rc }}
+      标准输出: {{ ovn_install_result.stdout | default('无') }}
+      错误输出: {{ ovn_install_result.stderr | default('无') }}
+  when: (is_init is defined) and (is_init == 1)
+
 
 # 可选：添加“验证 Kube-OVN 核心组件状态”的任务，确保实际可用
 - name: 验证 Kube-OVN 核心组件状态
@@ -60,7 +87,7 @@
   delay: 5     # 每次间隔5秒
 
 - name: 验证 kube-ovn 网络插件状态
-  ansible.builtin.command: kubectl get pods -n kube-ovn
+  ansible.builtin.command: kubectl get pods -n kube-system
   register: ovn_status
   when: (is_init is defined) and (is_init == 1)
 
