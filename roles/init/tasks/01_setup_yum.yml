@@ -23,10 +23,10 @@
     path: /etc/apt/sources.list.d/local.list
     state: absent
 
-#- name: Remove existing sources.list if present
-#  file:
-#    path: /etc/apt/sources.list
-#    state: absent
+- name: Remove existing sources.list if present
+  file:
+    path: /etc/apt/sources.list
+    state: absent
 
 
 - name: Get apt file - local.list

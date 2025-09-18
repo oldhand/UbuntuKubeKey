@@ -9,3 +9,4 @@ k8s_version: 1.29
 nic_name: "ens33"
 k8s_master:
   - { ip: "192.168.0.127", hostname: "ubuntu2204kube01" }
+  - { ip: "192.168.0.132", hostname: "ubuntu2204kube02" }

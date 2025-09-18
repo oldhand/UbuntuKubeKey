@@ -7,6 +7,8 @@ if [ "$(id -u)" -ne 0 ]; then
     exit 1
 fi
 
+sudo apt purge -y systemd-timesyncd
+
 echo "安装所有的依赖包..."
 sudo dpkg -i ./packages/*.deb
 
